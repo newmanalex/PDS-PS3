@@ -1,5 +1,7 @@
 #Alex Newman 450781
-
+library(dplyr)
+library(tidyr)
+library(readr)
 library(ggplot2)
 #Problem 1
 #visualize the super tuesday polling data
@@ -23,3 +25,55 @@ ggplot(data=supertuesday, mapping=aes(x=start_date, y=pct, color=candidate_name)
   theme(axis.text.x = element_text(angle = 90, hjust = 1))#rotate dates so they are readable,
 
 
+#Problem 2
+primaryPolls<-read_csv('https://jmontgomery.github.io/PDS/Datasets/president_primary_polls_feb2020.csv')
+primaryPolls$start_date<-as.Date(primaryPolls$start_date, "%m/%d/%y")
+
+twomonths<-filter(primaryPolls, start_date>="2020-01-26" ) #filter data that was taken in last 2 months
+twomonthsnarrowed<-select(twomonths, start_date, pct, state, candidate_name) #narrow data set to variables of interest
+ProportionPolls<- mutate(twomonthsnarrowed, proportion=pct/100)#Take narrowed data and add a proportion variable
+
+ProportionPolls%>%
+  group_by(candidate_name, state)%>%
+  summarise(med_sup=median(pct), count=n())
+
+
+#Problem 3
+library(fivethirtyeight)
+library(tidyverse)
+polls <- read_csv("https://jmontgomery.github.io/PDS/Datasets/president_primary_polls_feb2020.csv")
+Endorsements <- endorsements_2020
+#rename endorsee to candidate name
+Endorsements<-rename(Endorsements, candidate_name= endorsee)
+#Change Endorsements into a tibble
+Endorsements<-as_tibble(Endorsements)
+#Filter poll variable to only include 6 candidates
+polls<-filter(polls, polls$candidate_name%in% c("Amy Klobuchar", "Bernard Sanders", "Elizabeth Warren", "Joseph R. Biden Jr.", "Michael Bloomberg", "Pete Buttigieg") )
+#subset down data to variables of interest
+polls<-select(polls, candidate_name, sample_size, start_date,party, pct)
+levels(Endorsements$candidate_name)
+#Change endorsements candidate names to be identical to those in the polls dataset
+Endorsements$candidate_name<-Endorsements$candidate_name%>%
+  recode( "Bernie Sanders"= "Bernard Sanders", "Joe Biden"= "Joseph R. Biden Jr.")
+#join the two datasets together
+combinedData<-polls%>%
+  inner_join(Endorsements, by="candidate_name")
+#show there are now only 5 candidates
+unique(combinedData$candidate_name)
+ 
+#calculate number of endorsements for each candidate
+#note that combinedData has created a lot of extra data as a result of the joins that is not useful
+#I will calculate the number of endorsements from the endorsements dataset
+EndorsementCount<-Endorsements%>%
+  filter(candidate_name%in% c("Amy Klobuchar", "Bernard Sanders", "Elizabeth Warren", "Joseph R. Biden Jr.", "Michael Bloomberg", "Pete Buttigieg") )%>%
+  group_by(candidate_name)%>%
+  summarise(n())
+
+#plot the number of endorsements of each candidate and save as object p
+Endorsements<-filter(Endorsements, Endorsements$candidate_name%in% c("Amy Klobuchar", "Bernard Sanders", "Elizabeth Warren", "Joseph R. Biden Jr.", "Michael Bloomberg", "Pete Buttigieg") )
+p<-ggplot(data = Endorsements)+
+  geom_bar(mapping=aes(candidate_name))
+p+ theme_dark()
+p<-p+
+  labs(title= "Number of Endorsements Among Candididates", x= "Candidate", y= "Number of Endorsements")
+p+theme_classic()

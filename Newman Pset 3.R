@@ -108,7 +108,7 @@ wordcloudtweets<-originaltweets$text
 wordcloudtweets<-str_remove_all(wordcloudtweets, "[:punct:]")
 wordcloudtweets<-str_remove_all(wordcloudtweets, "[0-9]")
 wordcloudtweets<-str_to_lower(wordcloudtweets)
-#remove stop words
+#remove stop words 
 stopwords<-c("see", "people", "new", "want", "one", "even", "must", "need", "done", "back", "just", "going", "know", "can", "said", "like", "many", "realdonaldtrump")
 wordcloudtweets<-removeWords(wordcloudtweets, stopwords)
 wordcloudtweets<-removeWords(wordcloudtweets, stopwords("english"))
@@ -118,4 +118,6 @@ wordcloudtweets<-str_squish(wordcloudtweets)
 wordcloudwords<-str_split(wordcloudtweets, pattern=" ")
 wordcloudwords<-unlist(wordcloudwords)
 
-
+trump50words<-head(sort(table(wordcloudwords), decreasing=TRUE), 50)
+trump50tibble<-as_tibble(trump50words)
+wordcloud(trump50tibble$wordcloudwords, trump50tibble$n, min.freq = 3)

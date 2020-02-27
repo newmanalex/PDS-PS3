@@ -28,16 +28,17 @@ ggplot(data=supertuesday, mapping=aes(x=start_date, y=pct, color=candidate_name)
 #Problem 2
 primaryPolls<-read_csv('https://jmontgomery.github.io/PDS/Datasets/president_primary_polls_feb2020.csv')
 primaryPolls$start_date<-as.Date(primaryPolls$start_date, "%m/%d/%y")
-
+#filter down data
 twomonths<-filter(primaryPolls, start_date>="2020-01-26" ) #filter data that was taken in last 2 months
 twomonthsnarrowed<-select(twomonths, start_date, pct, state, candidate_name) #narrow data set to variables of interest
 ProportionPolls<- mutate(twomonthsnarrowed, proportion=pct/100)#Take narrowed data and add a proportion variable
-
-ProportionPolls%>%
+#create a candidate state dyad set
+dyad<-ProportionPolls%>%
   group_by(candidate_name, state)%>%
   summarise(med_sup=median(pct), count=n())
-
-
+#compare sizes of the datasets
+object.size(primaryPolls)
+object.size(dyad)
 #Problem 3
 library(fivethirtyeight)
 library(tidyverse)
@@ -117,7 +118,15 @@ wordcloudtweets<-str_squish(wordcloudtweets)
 #split the tweets into individual words
 wordcloudwords<-str_split(wordcloudtweets, pattern=" ")
 wordcloudwords<-unlist(wordcloudwords)
-
+#create wordcloud of top 50 words
 trump50words<-head(sort(table(wordcloudwords), decreasing=TRUE), 50)
 trump50tibble<-as_tibble(trump50words)
 wordcloud(trump50tibble$wordcloudwords, trump50tibble$n, min.freq = 3)
+
+#create document term matrix
+#first, create corpus
+corpus<-Corpus(VectorSource(wordcloudwords))
+#then create dtm
+DTM<-DocumentTermMatrix(corpus, control = list(weighting = weightTfIdf))
+
+                        

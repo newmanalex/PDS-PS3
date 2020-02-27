@@ -128,7 +128,6 @@ wordcloud(trump50tibble$wordcloudwords, trump50tibble$n, min.freq = 3)
 corpus<-Corpus(VectorSource(wordcloudwords))
 #then create dtm
 DTM<-DocumentTermMatrix(corpus, control = list(weighting = weightTfIdf))
-#take the top 50 highest scoring words
+#take the top 50 highest scoring words and print them
 frequencies<-findFreqTerms(DTM, lowfreq = 0.8)
 frequencies[1:50]
-                        

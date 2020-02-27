@@ -77,3 +77,45 @@ p+ theme_dark()
 p<-p+
   labs(title= "Number of Endorsements Among Candididates", x= "Candidate", y= "Number of Endorsements")
 p+theme_classic()
+
+#Problem 4
+
+library(tidyverse)
+library(tm)
+library(lubridate)
+library(wordcloud)
+tweets <- read_csv('https://politicaldatascience.com/PDS/Datasets/trump_tweets.csv')
+
+#separate date and time into two variables
+tweets<- separate(tweets, created_at, into=c("date", "time"), sep=" ", remove=TRUE)
+#find the range of dates
+range(tweets$date)
+#subset to original tweets
+originaltweets<-tweets%>%
+  filter(is_retweet==FALSE)
+
+#find the 5 most favorited tweets
+favorites<-originaltweets%>%
+  arrange(desc(favorite_count))
+favorites$text[1:5]
+#find the 5 most retweeted tweets
+retweets<-originaltweets%>%
+  arrange(desc(retweet_count))
+retweets$text[1:5]
+
+#remove punctuation, numbers, and set everything to lowercase
+wordcloudtweets<-originaltweets$text
+wordcloudtweets<-str_remove_all(wordcloudtweets, "[:punct:]")
+wordcloudtweets<-str_remove_all(wordcloudtweets, "[0-9]")
+wordcloudtweets<-str_to_lower(wordcloudtweets)
+#remove stop words
+stopwords<-c("see", "people", "new", "want", "one", "even", "must", "need", "done", "back", "just", "going", "know", "can", "said", "like", "many", "realdonaldtrump")
+wordcloudtweets<-removeWords(wordcloudtweets, stopwords)
+wordcloudtweets<-removeWords(wordcloudtweets, stopwords("english"))
+#consolidate white space
+wordcloudtweets<-str_squish(wordcloudtweets)
+#split the tweets into individual words
+wordcloudwords<-str_split(wordcloudtweets, pattern=" ")
+wordcloudwords<-unlist(wordcloudwords)
+
+
